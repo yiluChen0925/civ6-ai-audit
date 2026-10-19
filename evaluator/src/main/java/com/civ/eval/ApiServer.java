@@ -13,10 +13,22 @@ import java.util.*;
 
 public class ApiServer {
 
-    private static final String DATA_DIR = "D:/MyProject/CivilizationVI/data/collected";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    /**
+     * 数据目录：优先 -Dciv6.eval.dataDir，其次环境变量 CIV6_DATA_DIR，
+     * 默认取「当前工作目录/data/collected」——所以请在项目根目录下启动，别再写死个人绝对路径。
+     */
+    static String resolveDataDir() {
+        String prop = System.getProperty("civ6.eval.dataDir");
+        if (prop != null && !prop.isBlank()) return prop;
+        String env = System.getenv("CIV6_DATA_DIR");
+        if (env != null && !env.isBlank()) return env;
+        return java.nio.file.Paths.get("data", "collected").toString();
+    }
+
     public static void main(String[] args) throws Exception {
+        String dataDir = resolveDataDir();
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
         // ===== 接口1：获取某回合的对比分析 =====
@@ -29,7 +41,7 @@ public class ApiServer {
                     turnNum = Integer.parseInt(query.substring(5));
                 }
 
-                Map<Integer, TurnData> turns = TurnDataLoader.loadAll(DATA_DIR);
+                Map<Integer, TurnData> turns = TurnDataLoader.loadAll(dataDir);
                 TurnData current = turns.get(turnNum);
                 TurnData next = turns.get(turnNum + 1);
 
@@ -55,7 +67,7 @@ public class ApiServer {
         server.createContext("/api/turns", exchange -> {
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             try {
-                Map<Integer, TurnData> turns = TurnDataLoader.loadAll(DATA_DIR);
+                Map<Integer, TurnData> turns = TurnDataLoader.loadAll(dataDir);
                 List<Integer> turnNums = new ArrayList<>(turns.keySet());
                 Collections.sort(turnNums);
                 sendJson(exchange, 200, Map.of("turns", turnNums));
@@ -68,7 +80,7 @@ public class ApiServer {
         server.createContext("/api/all", exchange -> {
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             try {
-                Map<Integer, TurnData> turns = TurnDataLoader.loadAll(DATA_DIR);
+                Map<Integer, TurnData> turns = TurnDataLoader.loadAll(dataDir);
                 sendJson(exchange, 200, turns);
             } catch (Exception e) {
                 sendJson(exchange, 500, Map.of("error", e.getMessage()));

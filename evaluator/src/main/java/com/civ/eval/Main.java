@@ -10,10 +10,8 @@ import java.util.Map;
 
 public class Main {
 
-    private static final String DATA_DIR =
-            "D:/MyProject/CivilizationVI/data/collected";
-
     public static void main(String[] args) throws Exception {
+        String DATA_DIR = ApiServer.resolveDataDir();
         System.out.println("加载数据目录: " + DATA_DIR);
 
         Map<Integer, TurnData> turns = TurnDataLoader.loadAll(DATA_DIR);

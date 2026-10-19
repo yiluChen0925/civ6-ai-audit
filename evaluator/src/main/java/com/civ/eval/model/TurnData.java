@@ -11,6 +11,7 @@ public class TurnData {
     public String game;
     public List<CityInfo> cities = new ArrayList<>();
     public List<UnitInfo> units = new ArrayList<>();
+    public List<PlayerInfo> players = new ArrayList<>();
     public Reflections reflections;
 
     /** 找到指定 pid 的城市 */
@@ -19,6 +20,21 @@ public class TurnData {
                 .filter(c -> c.pid == pid)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /** 找到指定 pid 的玩家 */
+    public PlayerInfo findPlayerByPid(int pid) {
+        return players.stream()
+                .filter(p -> p.pid == pid)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /** 我方（pid=0）的全部城市——城市检查别只看第一座 */
+    public List<CityInfo> findCitiesByPid(int pid) {
+        return cities.stream()
+                .filter(c -> c.pid == pid)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     /** 把 units 列表转成 {id: UnitInfo} 的 Map */
