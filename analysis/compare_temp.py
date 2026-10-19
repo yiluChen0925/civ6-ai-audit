@@ -1,11 +1,20 @@
 """
 对比 AI 的承诺和下一回合的事实
+
+用法：在项目根目录执行 python analysis/compare_temp.py
+数据目录默认取 ./data/collected，可用环境变量 CIV6_DATA_DIR 覆盖。
 """
 
 import json
+import os
+import sys
 from pathlib import Path
 
-DATA_DIR = Path("D:/MyProject/CivilizationVI/data/collected")
+# Windows 控制台默认 GBK，直接 print 表情符号会 UnicodeEncodeError，先兜住
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+DATA_DIR = Path(os.environ.get("CIV6_DATA_DIR", Path("data") / "collected"))
 
 
 def load_all_turns():
