@@ -8,12 +8,13 @@ echo ========================================
 echo.
 
 :: ============================================================
-:: 绝对路径配置（根据你的实际情况修改，只改下面这4行）
+:: 路径配置：默认按"脚本所在目录的上一级"推导，也可用环境变量覆盖
 :: ============================================================
-set PROJECT_ROOT=D:\MyProject\CivilizationVI
-set DATA_DIR=%PROJECT_ROOT%\data
-set GAME_LOGS=C:\Users\25951\AppData\Local\Firaxis Games\Sid Meier's Civilization VI\Logs
-set CLINE_DIR=C:\Users\25951\.cline\data\sessions\1788689983080_eidre
+for %%I in ("%~dp0..") do set "PROJECT_ROOT=%%~fI"
+set "DATA_DIR=%PROJECT_ROOT%\data"
+if not defined GAME_LOGS set "GAME_LOGS=%LOCALAPPDATA%\Firaxis Games\Sid Meier's Civilization VI\Logs"
+if not defined CLINE_DIR set "CLINE_DIR=%USERPROFILE%\.cline\data\sessions\YOUR_SESSION_ID"
+:: 注意：CLINE_DIR 需指向你自己的 Cline 会话目录（...\sessions\<会话id>），否则会跳过对话采集
 :: ============================================================
 
 :: 检查项目目录是否存在
