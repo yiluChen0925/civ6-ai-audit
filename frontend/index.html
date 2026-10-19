@@ -2,24 +2,81 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Civ6 AI 行为审计</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='14' font-weight='700' fill='white' text-anchor='middle'%3EC6%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="style.css">
 </head>
-<script src="chart.js"></script>
 <body>
-<header>
-    <h1>🎮 Civ6 AI Agent 行为审计</h1>
-    <p class="subtitle">AI的"承诺" vs 游戏的"事实"</p>
+<a class="skip" href="#content">跳到主要内容</a>
+<header class="topbar">
+    <div class="topbar-inner">
+        <div class="brand">
+            <span class="brand-mark">C6</span>
+            <div>
+                <h1>Civ6 AI 行为审计</h1>
+                <p class="subtitle">模型每回合写的计划，下一回合到底做了没有</p>
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <span class="conn" id="connState" data-state="loading">连接中…</span>
+            <button class="btn btn-ghost" id="themeBtn" type="button" title="切换深浅色">深/浅</button>
+            <button class="btn btn-ghost" id="methodBtn" type="button" aria-expanded="false">口径说明</button>
+        </div>
+    </div>
 </header>
 
-<div class="turn-selector" id="turnSelector">
-    <!-- JS 填充回合按钮 -->
-</div>
+<section class="kpis" id="kpis" aria-label="核心指标"></section>
 
-<main id="content">
-    <div class="loading">加载中...</div>
+<nav class="toolbar" aria-label="视图切换">
+    <div class="tabs" role="tablist">
+        <button class="tab is-active" role="tab" aria-selected="true" data-view="detail" type="button">单回合</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="overview" type="button">总览</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="metrics" type="button">指标</button>
+    </div>
+    <div class="toolbar-right">
+        <label class="search">
+            <span class="search-icon">⌕</span>
+            <input id="searchInput" type="search" placeholder="搜回合号 / 计划文本 / 失败项" autocomplete="off">
+        </label>
+        <div class="stepper">
+            <button class="btn btn-ghost" id="prevTurn" type="button" title="上一回合（←）">←</button>
+            <span id="turnLabel" class="turn-label">T–</span>
+            <button class="btn btn-ghost" id="nextTurn" type="button" title="下一回合（→）">→</button>
+        </div>
+    </div>
+</nav>
+
+<div class="turnstrip" id="turnStrip" aria-label="回合选择"></div>
+
+<aside class="method-panel" id="methodPanel" hidden>
+    <div class="method-inner">
+        <h2>口径说明</h2>
+        <p><strong>宽松口径（7 项）</strong>：单位移动、单位战斗、城市生产、人口增长、科技推进、文化推进、金币增长。逐项看「这一回合有没有动静」，和模型写的那句话没有直接关系。</p>
+        <p><strong>严格口径</strong>：从计划文本里按固定词表抽出兵种（勇士／弓箭手／建造者／开拓者／商人／英雄），核对下一回合该兵种是否移动、造成伤害或从快照消失。只是被打掉血不算，那是别人执行的。</p>
+        <p><strong>已知偏差</strong>：城市、人口两项都只看 pid=0 的第一座城；金币增长几乎恒真，去掉它平均分会从 34% 掉到 23.4%。详情见仓库 README 的「已知问题」。</p>
+        <p><strong>数据边界</strong>：快照里的 <code>units</code> 只有我方的兵，<code>cities</code> 和 <code>players</code> 是全部六家；<code>is_agent</code> 字段全为 false，认我方只能认 pid=0。pid=4 在 91–140 回合缺席，pid=1 在 123–140 缺席。</p>
+        <p><strong>两种聚合</strong>：脚本报的 33.9% 是「通过项 ÷ 总项数」（240/707）；这里显示的 34% 是「先算每回合百分比、再对 101 个回合求平均」。小样本下两者会分开走。</p>
+    </div>
+</aside>
+
+<main id="content" aria-live="polite" tabindex="-1">
+    <div class="skeleton-wrap">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+    </div>
 </main>
 
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<footer class="foot">
+    <span>数据：<code>data/collected</code>，T039–T140 共 102 个回合</span>
+    <span>评分实现：<code>frontend/metrics.js</code> · 对照脚本：<code>analysis/*.py</code></span>
+</footer>
+
+<script src="chart.js"></script>
+<script src="metrics.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
