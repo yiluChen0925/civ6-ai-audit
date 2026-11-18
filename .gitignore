@@ -23,4 +23,11 @@ data/collected/
 # 日志
 *.log
 
+# 上游开源项目（不纳入本仓库版本管理）
 civ6-mcp/
+
+# 密钥与本地配置
+.env
+
+# 运行产物
+codegen/traces/
